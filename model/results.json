@@ -1,0 +1,189 @@
+{
+  "best_model": "Logistic Regression",
+  "metrics": [
+    {
+      "model": "Logistic Regression",
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "confusion_matrix": [
+        [
+          2,
+          0
+        ],
+        [
+          0,
+          42
+        ]
+      ]
+    },
+    {
+      "model": "Random Forest",
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "confusion_matrix": [
+        [
+          2,
+          0
+        ],
+        [
+          0,
+          42
+        ]
+      ]
+    },
+    {
+      "model": "XGBoost",
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "confusion_matrix": [
+        [
+          2,
+          0
+        ],
+        [
+          0,
+          42
+        ]
+      ]
+    }
+  ],
+  "cv_results": {
+    "Logistic Regression": {
+      "accuracy": {
+        "mean": 1.0,
+        "std": 0.0,
+        "all": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "f1": {
+        "mean": 1.0,
+        "std": 0.0,
+        "all": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "roc_auc": {
+        "mean": 1.0,
+        "std": 0.0,
+        "all": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    "Random Forest": {
+      "accuracy": {
+        "mean": 1.0,
+        "std": 0.0,
+        "all": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "f1": {
+        "mean": 1.0,
+        "std": 0.0,
+        "all": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "roc_auc": {
+        "mean": 1.0,
+        "std": 0.0,
+        "all": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    "XGBoost": {
+      "accuracy": {
+        "mean": 0.9969230769230769,
+        "std": 0.006153846153846132,
+        "all": [
+          1.0,
+          1.0,
+          0.9846153846153847,
+          1.0,
+          1.0
+        ]
+      },
+      "f1": {
+        "mean": 0.9968253968253968,
+        "std": 0.006349206349206371,
+        "all": [
+          1.0,
+          1.0,
+          0.9841269841269841,
+          1.0,
+          1.0
+        ]
+      },
+      "roc_auc": {
+        "mean": 1.0,
+        "std": 0.0,
+        "all": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "feature_names": [
+    "FRET_REVENUS_TND",
+    "AUTRES_COUTS_FIXES_TND",
+    "LOAD_FACTOR",
+    "REV_PER_PAX",
+    "COST_PER_KM",
+    "MARGE_OP",
+    "RATIO_COUT_REVENU",
+    "HAUTE_SAISON",
+    "MOIS_NUM",
+    "ANNEE",
+    "CAPACITE_SIEGES",
+    "TYPE_APPAREIL_Airbus A320",
+    "TYPE_APPAREIL_Airbus A340-300",
+    "TYPE_SERVICE_J- Skd. Serv. Normal",
+    "TYPE_SERVICE_P- Others Ferry",
+    "PROPRIETAIRE_CODE_TU",
+    "PROPRIETAIRE_CODE_XG",
+    "PROPRIETAIRE_LIBELLE_Aff\u00e9r\u00e9 / Lou\u00e9",
+    "PROPRIETAIRE_LIBELLE_Tunisair (propri\u00e9taire)",
+    "TYPE_SOURCE_R\u00c9EL",
+    "TYPE_SOURCE_SIMUL\u00c9"
+  ]
+}
