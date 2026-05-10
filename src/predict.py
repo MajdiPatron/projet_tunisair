@@ -19,7 +19,13 @@ def load_model(model_name: str = "model_best.pkl"):
     path = os.path.join(MODEL_DIR, model_name)
     if not os.path.exists(path):
         raise FileNotFoundError(f"Modèle introuvable : {path}")
-    return joblib.load(path)
+    model = joblib.load(path)
+    
+    # Correction pour l'incompatibilité de version scikit-learn (multi_class)
+    if 'LogisticRegression' in str(type(model)) and not hasattr(model, 'multi_class'):
+        setattr(model, 'multi_class', 'auto')
+        
+    return model
 
 def load_scaler():
     path = os.path.join(MODEL_DIR, "scaler.pkl")
@@ -66,6 +72,12 @@ def predict_single(input_dict: dict, model=None, scaler=None,
     cout = input_dict.get("COUTS", 0)
     pax  = input_dict.get("PAX", input_dict.get("NB_PAX", 100))
     dist = input_dict.get("DISTANCE", 1000)
+    
+    # Valeurs par défaut pour éviter les outliers du scaler (ex: ANNEE=0)
+    import datetime
+    now = datetime.datetime.now()
+    default_year  = input_dict.get("ANNEE", now.year)
+    default_month = input_dict.get("MOIS", input_dict.get("MOIS_NUM", now.month))
 
     if "PROFIT" in feature_names:
         row["PROFIT"] = rev - cout
@@ -77,6 +89,15 @@ def predict_single(input_dict: dict, model=None, scaler=None,
         row["REV_PER_PAX"] = rev / pax if pax > 0 else 0
     if "COST_PER_KM" in feature_names:
         row["COST_PER_KM"] = cout / dist if dist > 0 else 0
+    if "ANNEE" in feature_names:
+        row["ANNEE"] = default_year
+    if "MOIS" in feature_names:
+        row["MOIS"] = default_month
+    if "MOIS_NUM" in feature_names:
+        row["MOIS_NUM"] = default_month
+
+    # Debug: afficher le vecteur final pour diagnostic
+    # print(f"DEBUG Prediction Input: {row}")
 
     X = pd.DataFrame([row])[feature_names].fillna(0)
     X = X.replace([np.inf, -np.inf], 0)
@@ -93,8 +114,19 @@ def predict_single(input_dict: dict, model=None, scaler=None,
     except Exception:
         proba = model.predict_proba(X)[0][1]
 
-    pred = int(proba >= 0.5)
-    label = "RENTABLE" if pred == 1 else "NON RENTABLE"
+    # --- LOGIQUE MÉTIER (Sanity Check) ---
+    # Si le profit calculé est négatif, la ligne ne peut pas être "Rentable" 
+    # quelle que soit la prédiction statistique du modèle (qui peut être biaisé).
+    profit_calc = rev - cout
+    if profit_calc <= 0:
+        pred = 0
+        label = "NON RENTABLE"
+        # On ajuste la probabilité pour refléter le risque
+        proba = min(proba, 0.49) 
+    else:
+        pred = int(proba >= 0.5)
+        label = "RENTABLE" if pred == 1 else "NON RENTABLE"
+
     confiance = "Très Haute" if proba > 0.85 or proba < 0.15 else \
                 "Haute" if proba > 0.70 or proba < 0.30 else "Modérée"
 

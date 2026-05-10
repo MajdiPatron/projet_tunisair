@@ -20,7 +20,7 @@ REPORT_DIR = os.path.join(ROOT_DIR, "reports")
 LOGO_PATH  = os.path.join(ROOT_DIR, "Tunisair_(logo).png")
 
 # ── Imports pages ─────────────────────────────────────────────────────────────
-from app.styles import TUNISAIR_CSS, hero_header, kpi_card, pred_result_box, progress_bar
+from app.styles import get_styles, hero_header, kpi_card, pred_result_box, progress_bar
 import app.styles as styles
 from app.page_dashboard  import render_dashboard, render_data_explorer
 from app.page_prediction import render_prediction
@@ -37,7 +37,7 @@ st.set_page_config(
 )
 
 # Injecter CSS global
-st.markdown(TUNISAIR_CSS, unsafe_allow_html=True)
+# Styles are injected after sidebar rendering to account for light_mode toggle
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -120,11 +120,16 @@ def render_sidebar():
             st.markdown("# ✈️ TUNISAIR")
 
         st.markdown("---")
+        
+        # Thème Toggle
+        light_mode = st.toggle("☀️ Mode Clair", value=False)
+        st.markdown("---")
+
         st.markdown("### 🧭 Navigation")
 
         page = st.radio(
             label="Menu",
-            options=["🏠 Dashboard", "🔮 Prédiction", "📊 Modèles & Évaluation", "📋 Données"],
+            options=["🏠 Dashboard", "🔮 Prédiction"],
             label_visibility="collapsed",
         )
 
@@ -138,7 +143,7 @@ def render_sidebar():
 
         st.markdown("### ⚙️ Statut Système")
         st.markdown(f"""
-        <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:0.8rem;font-size:0.8rem;">
+        <div class="status-box">
         🤖 Modèle : <b>{model_status}</b><br/>
         📂 Données : <b>{data_status}</b><br/>
         🐍 Streamlit : <b>✅ Actif</b>
@@ -159,23 +164,26 @@ def render_sidebar():
 
         st.markdown("---")
         st.markdown(
-            "<p style='color:rgba(255,255,255,0.3);font-size:0.7rem;text-align:center;'>"
+            "<p style='color:var(--text-muted);font-size:0.7rem;text-align:center;'>"
             "© 2024 Tunisair Analytics<br/>Powered by XGBoost & SHAP</p>",
             unsafe_allow_html=True
         )
 
-    return page
+    return page, light_mode
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
+    # Navigation & Theme
+    page, light_mode = render_sidebar()
+
+    # Injecter CSS global
+    st.markdown(get_styles(light_mode), unsafe_allow_html=True)
+
     # Header hero
     st.markdown(hero_header(LOGO_PATH), unsafe_allow_html=True)
-
-    # Navigation
-    page = render_sidebar()
 
     # Chargement données & modèle
     with st.spinner("⏳ Chargement des données..."):
@@ -185,48 +193,10 @@ def main():
 
     # ── ROUTING ──────────────────────────────────────────────────────────────
     if page == "🏠 Dashboard":
-        render_dashboard(df_vis, styles)
+        render_dashboard(df_vis, styles, light_mode)
 
     elif page == "🔮 Prédiction":
-        render_prediction(model, scaler, feature_names, df_vis, styles)
-
-    elif page == "📊 Modèles & Évaluation":
-        render_models(styles)
-
-    elif page == "📋 Données":
-        render_data_explorer(df_vis)
-
-        # Section SHAP interactif
-        if model is not None and feature_names:
-            st.markdown("---")
-            st.markdown("### 🤖 Explicabilité SHAP")
-            shap_path = os.path.join(REPORT_DIR, "shap_summary.png")
-
-            if st.button("🔍 Générer SHAP Summary"):
-                with st.spinner("Calcul SHAP (peut prendre 30s)..."):
-                    try:
-                        from src.predict import plot_shap_summary, load_feature_names
-                        import sys
-                        sys.path.insert(0, ROOT_DIR)
-
-                        final_csv = os.path.join(DATA_DIR, "dataset_final.csv")
-                        if os.path.exists(final_csv):
-                            df_model = pd.read_csv(final_csv)
-                            avail = [f for f in feature_names if f in df_model.columns]
-                            X_shap = df_model[avail].fillna(0).head(200)
-                            path = plot_shap_summary(model, X_shap, avail,
-                                                     save_path=shap_path)
-                            if path and os.path.exists(path):
-                                st.image(path, width='stretch',
-                                         caption="SHAP Summary Plot")
-                            else:
-                                st.info("SHAP non disponible — vérifiez l'installation de shap.")
-                    except Exception as e:
-                        st.error(f"Erreur SHAP : {e}")
-
-            elif os.path.exists(shap_path):
-                st.image(shap_path, width='stretch',
-                         caption="SHAP Summary — Impact des Variables sur la Prédiction")
+        render_prediction(model, scaler, feature_names, df_vis, styles, light_mode)
 
 
 if __name__ == "__main__":

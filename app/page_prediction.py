@@ -15,11 +15,11 @@ TUNISAIR_RED  = "#E30613"
 TUNISAIR_BLUE = "#1C3F6E"
 
 
-def render_prediction(model, scaler, feature_names, df_vis, styles):
+def render_prediction(model, scaler, feature_names, df_vis, styles, light_mode=False):
     """Page de prédiction interactive."""
 
     st.markdown("### 🔮 Prédiction de Rentabilité d'une Ligne")
-    st.markdown("<p style='color:rgba(255,255,255,0.55);'>Renseignez les paramètres du vol pour obtenir une prédiction IA.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:var(--text-muted);'>Renseignez les paramètres du vol pour obtenir une prédiction IA.</p>", unsafe_allow_html=True)
 
     # ── SIDEBAR FILTRES LIGNE ──────────────────────────────────────────────
     with st.sidebar:
@@ -128,35 +128,35 @@ def render_prediction(model, scaler, feature_names, df_vis, styles):
         fig_gauge = go.Figure(go.Indicator(
             mode="gauge+number+delta",
             value=result["probabilite"] * 100,
-            title={"text": "Probabilité de Rentabilité (%)", "font": {"color": "white", "size": 14}},
-            number={"suffix": "%", "font": {"color": "white", "size": 32}},
-            delta={"reference": 50, "font": {"color": "white"}},
+            title={"text": "Probabilité de Rentabilité (%)", "font": {"color": "var(--text-main)", "size": 14}},
+            number={"suffix": "%", "font": {"color": "var(--text-main)", "size": 32}},
+            delta={"reference": 50, "font": {"color": "var(--text-main)"}},
             gauge={
-                "axis": {"range": [0, 100], "tickcolor": "white"},
+                "axis": {"range": [0, 100], "tickcolor": "var(--text-main)"},
                 "bar":  {"color": "#00d97e" if result["prediction"] == 1 else "#ff4d6d"},
                 "steps": [
                     {"range": [0, 40],  "color": "rgba(255,77,109,0.2)"},
                     {"range": [40, 60], "color": "rgba(255,255,255,0.05)"},
                     {"range": [60, 100],"color": "rgba(0,217,126,0.2)"},
                 ],
-                "threshold": {"line": {"color": "white", "width": 2}, "thickness": 0.8, "value": 50},
+                "threshold": {"line": {"color": "var(--text-main)", "width": 2}, "thickness": 0.8, "value": 50},
             }
         ))
         fig_gauge.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"),
+            paper_bgcolor="rgba(0,0,0,0)", font=dict(color="var(--text-main)"),
             height=280, margin=dict(l=20, r=20, t=30, b=20)
         )
         st.plotly_chart(fig_gauge, width='stretch')
 
         # Analyse what-if
-        _render_whatif(revenus, couts, distance, load_factor, capacite, mois, model, scaler, feature_names)
+        _render_whatif(revenus, couts, distance, load_factor, capacite, mois, model, scaler, feature_names, light_mode)
 
     # ── PRÉVISION MENSUELLE ────────────────────────────────────────────────
     st.markdown("---")
-    _render_forecast(df_vis, model, scaler, feature_names)
+    _render_forecast(df_vis, model, scaler, feature_names, light_mode)
 
 
-def _render_whatif(rev_base, cout_base, dist, lf, cap, mois, model, scaler, feature_names):
+def _render_whatif(rev_base, cout_base, dist, lf, cap, mois, model, scaler, feature_names, light_mode):
     """Analyse scénarios what-if."""
     with st.expander("🔬 Analyse de Scénarios (What-If)"):
         st.markdown("**Comparez différents scénarios de revenus et coûts**")
@@ -199,20 +199,20 @@ def _render_whatif(rev_base, cout_base, dist, lf, cap, mois, model, scaler, feat
             y=[float(r["Probabilité"].strip("%")) for r in rows],
             marker_color=["#ff4d6d" if float(r["Probabilité"].strip("%")) < 50 else "#00d97e" for r in rows],
             text=[r["Probabilité"] for r in rows],
-            textposition="outside", textfont=dict(color="white"),
+            textposition="outside", textfont=dict(color="var(--text-main)"),
         ))
-        fig.add_hline(y=50, line_dash="dash", line_color="white", line_width=1)
+        fig.add_hline(y=50, line_dash="dash", line_color="var(--text-main)", line_width=1)
         fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white"), height=300,
-            title=dict(text="Probabilité de Rentabilité par Scénario", font=dict(color="white")),
-            yaxis=dict(range=[0, 110], gridcolor="rgba(255,255,255,0.06)"),
+            font=dict(color="var(--text-main)"), height=300,
+            title=dict(text="Probabilité de Rentabilité par Scénario", font=dict(color="var(--text-main)")),
+            yaxis=dict(range=[0, 110], gridcolor="rgba(0,0,0,0.05)" if light_mode else "rgba(255,255,255,0.06)"),
             margin=dict(l=10, r=10, t=40, b=10),
         )
         st.plotly_chart(fig, width='stretch')
 
 
-def _render_forecast(df_vis, model, scaler, feature_names):
+def _render_forecast(df_vis, model, scaler, feature_names, light_mode):
     """Prévision mensuelle."""
     st.markdown("### 📈 Prévision de Rentabilité — 6 Prochains Mois")
 
@@ -241,15 +241,15 @@ def _render_forecast(df_vis, model, scaler, feature_names):
             marker_color=colors,
             name="Probabilité (%)",
             text=[f"{p*100:.0f}%" for p in df_forecast["PROBABILITE"]],
-            textposition="outside", textfont=dict(color="white"),
+            textposition="outside", textfont=dict(color="var(--text-main)"),
         ))
-        fig.add_hline(y=50, line_dash="dash", line_color="white", line_width=1.5,
-                      annotation_text="Seuil rentabilité", annotation_font_color="white")
+        fig.add_hline(y=50, line_dash="dash", line_color="var(--text-main)", line_width=1.5,
+                      annotation_text="Seuil rentabilité", annotation_font_color="var(--text-main)")
         fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white"), height=350,
-            title=dict(text=f"Prévision Rentabilité — {n_months} Mois", font=dict(color="white", size=14)),
-            yaxis=dict(range=[0, 115], gridcolor="rgba(255,255,255,0.06)", title="Probabilité (%)"),
+            font=dict(color="var(--text-main)"), height=350,
+            title=dict(text=f"Prévision Rentabilité — {n_months} Mois", font=dict(color="var(--text-main)", size=14)),
+            yaxis=dict(range=[0, 115], gridcolor="rgba(0,0,0,0.05)" if light_mode else "rgba(255,255,255,0.06)", title="Probabilité (%)"),
             margin=dict(l=10, r=10, t=50, b=10),
         )
         st.plotly_chart(fig, width='stretch')

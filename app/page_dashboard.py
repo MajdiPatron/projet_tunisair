@@ -12,7 +12,7 @@ TUNISAIR_RED  = "#E30613"
 TUNISAIR_BLUE = "#1C3F6E"
 DARK_BG       = "#0d1b2a"
 
-def render_dashboard(df_vis: pd.DataFrame, styles):
+def render_dashboard(df_vis: pd.DataFrame, styles, light_mode=False):
     """Affiche le dashboard principal avec KPIs et graphiques."""
 
     # ── KPIs ─────────────────────────────────────────────────────────────────
@@ -50,8 +50,8 @@ def render_dashboard(df_vis: pd.DataFrame, styles):
         st.markdown("<div class='section-card'><div class='section-title'>📊 Distribution des Profits</div>", unsafe_allow_html=True)
         if "PROFIT" in df_vis.columns:
             fig = px.histogram(df_vis, x="PROFIT", nbins=40, color_discrete_sequence=[TUNISAIR_RED])
-            fig.add_vline(x=0, line_dash="dash", line_color="white", line_width=1.5)
-            fig.update_layout(**_dark_layout("Distribution des Profits (TND)"))
+            fig.add_vline(x=0, line_dash="dash", line_color="var(--text-main)", line_width=1.5)
+            fig.update_layout(**_get_plot_layout("Distribution des Profits (TND)", light_mode))
             st.plotly_chart(fig, width='stretch')
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -67,9 +67,9 @@ def render_dashboard(df_vis: pd.DataFrame, styles):
             # Droite y=x
             max_v = max(df_vis["REVENUS"].max(), df_vis["COUTS"].max())
             fig.add_trace(go.Scatter(x=[0, max_v], y=[0, max_v],
-                          mode="lines", line=dict(color="white", dash="dash", width=1.5),
+                          mode="lines", line=dict(color="var(--text-main)", dash="dash", width=1.5),
                           name="Seuil rentabilité"))
-            fig.update_layout(**_dark_layout("Revenus vs Coûts"))
+            fig.update_layout(**_get_plot_layout("Revenus vs Coûts", light_mode))
             st.plotly_chart(fig, width='stretch')
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -87,7 +87,7 @@ def render_dashboard(df_vis: pd.DataFrame, styles):
             fig = px.bar(monthly, x="Mois", y="Profit Moyen",
                          color="Profit Moyen",
                          color_continuous_scale=[[0,"#ff4d6d"],[0.5,"#888"],[1,"#00d97e"]])
-            fig.update_layout(**_dark_layout("Profit Moyen par Mois"))
+            fig.update_layout(**_get_plot_layout("Profit Moyen par Mois", light_mode))
             st.plotly_chart(fig, width='stretch')
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -105,9 +105,9 @@ def render_dashboard(df_vis: pd.DataFrame, styles):
                 textfont_size=13
             ))
             fig.add_annotation(text=f"{rentable_pct:.0f}%", x=0.5, y=0.5,
-                                font_size=24, showarrow=False, font_color="white",
+                                font_size=24, showarrow=False, font_color="var(--text-main)",
                                 font=dict(weight="bold"))
-            fig.update_layout(**_dark_layout("Répartition Rentabilité"))
+            fig.update_layout(**_get_plot_layout("Répartition Rentabilité", light_mode))
             st.plotly_chart(fig, width='stretch')
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -126,8 +126,8 @@ def render_dashboard(df_vis: pd.DataFrame, styles):
                                   name="% Rentable", mode="lines+markers",
                                   line=dict(color=TUNISAIR_RED, width=2.5),
                                   marker=dict(size=8)), secondary_y=True)
-        fig.update_layout(**_dark_layout("Load Factor et Rentabilité Mensuelle"))
-        fig.update_yaxes(title_text="Load Factor (%)", secondary_y=False, color="white")
+        fig.update_layout(**_get_plot_layout("Load Factor et Rentabilité Mensuelle", light_mode))
+        fig.update_yaxes(title_text="Load Factor (%)", secondary_y=False)
         fig.update_yaxes(title_text="% Lignes Rentables", secondary_y=True, color=TUNISAIR_RED)
         st.plotly_chart(fig, width='stretch')
         st.markdown("</div>", unsafe_allow_html=True)
@@ -167,14 +167,18 @@ def render_data_explorer(df_vis: pd.DataFrame):
         st.dataframe(df_vis[num_cols].describe().round(2), width='stretch')
 
 
-def _dark_layout(title: str) -> dict:
+def _get_plot_layout(title: str, light_mode: bool) -> dict:
+    text_color = "#1a1a1a" if light_mode else "white"
+    muted_color = "rgba(0,0,0,0.5)" if light_mode else "rgba(255,255,255,0.7)"
+    grid_color = "rgba(0,0,0,0.05)" if light_mode else "rgba(255,255,255,0.06)"
+    
     return dict(
-        title=dict(text=title, font=dict(color="white", size=13)),
+        title=dict(text=title, font=dict(color=text_color, size=14, weight="bold")),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="rgba(255,255,255,0.7)"),
-        margin=dict(l=10, r=10, t=40, b=10),
-        legend=dict(bgcolor="rgba(0,0,0,0.3)", bordercolor="rgba(255,255,255,0.1)"),
-        xaxis=dict(gridcolor="rgba(255,255,255,0.06)", zerolinecolor="rgba(255,255,255,0.1)"),
-        yaxis=dict(gridcolor="rgba(255,255,255,0.06)", zerolinecolor="rgba(255,255,255,0.1)"),
+        font=dict(color=muted_color),
+        margin=dict(l=10, r=10, t=50, b=10),
+        legend=dict(bgcolor="rgba(255,255,255,0.1)", bordercolor=grid_color),
+        xaxis=dict(gridcolor=grid_color, zerolinecolor=grid_color, tickfont=dict(color=muted_color)),
+        yaxis=dict(gridcolor=grid_color, zerolinecolor=grid_color, tickfont=dict(color=muted_color)),
     )
