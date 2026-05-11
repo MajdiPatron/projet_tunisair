@@ -61,6 +61,11 @@ def predict_single(input_dict: dict, model=None, scaler=None,
         {"prediction": 1, "probabilite": 0.82, "label": "RENTABLE", "confiance": "Haute"}
     """
     if model is None:      model = load_model()
+    
+    # Correction de secours si le modèle est passé de l'extérieur sans attribut multi_class
+    if 'LogisticRegression' in str(type(model)) and not hasattr(model, 'multi_class'):
+        setattr(model, 'multi_class', 'auto')
+
     if scaler is None:     scaler = load_scaler()
     if feature_names is None: feature_names = load_feature_names()
 

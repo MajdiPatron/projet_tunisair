@@ -22,9 +22,8 @@ LOGO_PATH  = os.path.join(ROOT_DIR, "Tunisair_(logo).png")
 # ── Imports pages ─────────────────────────────────────────────────────────────
 from app.styles import get_styles, hero_header, kpi_card, pred_result_box, progress_bar
 import app.styles as styles
-from app.page_dashboard  import render_dashboard, render_data_explorer
+from app.page_dashboard  import render_dashboard
 from app.page_prediction import render_prediction
-from app.page_models     import render_models
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONFIG STREAMLIT
@@ -68,6 +67,9 @@ def load_model_cached():
 
     if os.path.exists(model_path):
         model = joblib.load(model_path)
+        # Correction pour l'incompatibilité de version scikit-learn (multi_class)
+        if 'LogisticRegression' in str(type(model)) and not hasattr(model, 'multi_class'):
+            setattr(model, 'multi_class', 'auto')
     if os.path.exists(scaler_path):
         scaler = joblib.load(scaler_path)
     if os.path.exists(res_path):

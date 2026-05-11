@@ -138,8 +138,7 @@ APP tunisiar/
 │   ├── streamlit_app.py           Point d'entrée principal
 │   ├── styles.py                  CSS Tunisair + composants HTML
 │   ├── page_dashboard.py          Dashboard KPIs + graphiques
-│   ├── page_prediction.py         Prédiction IA + What-If + Forecast
-│   └── page_models.py             Évaluation + SHAP + Matrices
+│   └── page_prediction.py         Prédiction IA + What-If + Forecast
 │
 ├── data/                          ← Données transformées (auto-généré)
 │   ├── dataset_final.csv          Dataset ML encodé
@@ -164,7 +163,6 @@ APP tunisiar/
 │   └── config.toml                Thème dark rouge Tunisair
 │
 ├── run_training.py                Script pipeline ML complet
-├── fix_streamlit_api.py           Utilitaire compatibilité Streamlit
 ├── requirements.txt               Dépendances Python
 └── rapport.md                     Ce rapport
 ```
@@ -419,20 +417,6 @@ streamlit_app.py (point d'entrée)
 - **Analyse What-If** : Comparaison 4 scénarios automatiques
 - **Forecast mensuel** : Prévision sur 3 à 12 mois
 
-#### 📊 Page Modèles & Évaluation
-- Tableau comparatif des 3 modèles avec surlignage du meilleur
-- Graphique barres groupées des métriques
-- Matrices de confusion interactives (heatmap)
-- Résultats cross-validation 5-fold
-- Images feature importance
-- SHAP Summary Plot (si disponible)
-
-#### 📋 Page Données
-- Explorateur filtrable (Tous / Rentables / Non rentables)
-- Sélection multi-colonnes
-- Statistiques descriptives complètes
-- Génération SHAP à la demande
-
 ### 8.4 Performance Technique
 
 | Optimisation | Implémentation |
@@ -598,6 +582,27 @@ python -m streamlit run app/streamlit_app.py
 
 ---
 
+## 12. Analyses Complémentaires et Améliorations (Mai 2026)
+
+### 12.1 Audit de la Qualité du Modèle et Data Leakage
+Lors de l'analyse approfondie du pipeline de données, un phénomène de **Data Leakage (fuite de données)** a été identifié :
+- **Observation** : Les modèles affichent une performance parfaite (Accuracy/ROC-AUC = 1.0).
+- **Cause** : Les variables `MARGE_OP` (Profit/Revenus) et `RATIO_COUT_REVENU` sont incluses dans les caractéristiques d'entraînement. Comme elles sont calculées directement à partir du `PROFIT`, le modèle "connaît" déjà la réponse.
+- **Action corrective recommandée** : Exclure ces ratios financiers du jeu de données d'entraînement pour forcer le modèle à apprendre des relations basées sur des variables prédictives réelles (saisonnalité, distance, type d'appareil, etc.).
+
+### 12.2 Nettoyage du Code et Maintenance
+Afin d'améliorer la maintenabilité du projet, les actions suivantes ont été réalisées :
+- **Suppression du code mort** : Retrait du script utilitaire `fix_streamlit_api.py` qui n'était plus nécessaire.
+- **Suppression des dossiers temporaires** : Nettoyage du dossier `scratch/` contenant des scripts de test obsolètes.
+- **Optimisation de la structure** : Mise à jour de la documentation technique pour refléter l'état actuel et épuré du dépôt.
+
+### 12.3 Recommandations Stratégiques pour la V2
+1. **Implémentation de variables retardées (Lagged Features)** : Utiliser les performances passées d'une ligne pour prédire son futur.
+2. **Intégration de données externes** : Ajouter des données météo ou des événements spéciaux pour améliorer la précision en haute saison.
+3. **Rééquilibrage du dataset** : Le dataset actuel présente un déséquilibre marqué (94% de vols rentables). Une collecte plus large incluant davantage de vols déficitaires permettrait une meilleure généralisation du modèle.
+
+---
+
 ### Dépannage
 
 | Problème | Solution |
@@ -626,7 +631,7 @@ python -m streamlit run app/streamlit_app.py
 
 ---
 
-## 12. Aperçu Visuel de l'Application
+## 13. Aperçu Visuel de l'Application
 
 Les captures suivantes montrent l'application **en production** sur les données réelles Tunisair.
 
@@ -654,7 +659,7 @@ Les captures suivantes montrent l'application **en production** sur les données
 
 ---
 
-## 13. Conclusion
+## 14. Conclusion
 
 Ce projet livre une solution **Data Science industrielle complète** pour Tunisair, couvrant l'intégralité du cycle CRISP-DM :
 

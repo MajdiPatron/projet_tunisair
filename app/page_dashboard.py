@@ -133,40 +133,6 @@ def render_dashboard(df_vis: pd.DataFrame, styles, light_mode=False):
         st.markdown("</div>", unsafe_allow_html=True)
 
 
-def render_data_explorer(df_vis: pd.DataFrame):
-    """Explorateur de données interactif."""
-    st.markdown("### 🔍 Explorateur de Données")
-
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        if "RENTABLE" in df_vis.columns:
-            filtre = st.radio("Filtrer par", ["Tous","Rentables","Non Rentables"])
-            if filtre == "Rentables":
-                df_show = df_vis[df_vis["RENTABLE"] == 1]
-            elif filtre == "Non Rentables":
-                df_show = df_vis[df_vis["RENTABLE"] == 0]
-            else:
-                df_show = df_vis
-        else:
-            df_show = df_vis
-        st.write(f"**{len(df_show):,}** enregistrements sélectionnés")
-
-    with col2:
-        cols_show = st.multiselect("Colonnes à afficher",
-                                   options=df_vis.columns.tolist(),
-                                   default=["REVENUS","COUTS","PROFIT","LOAD_FACTOR",
-                                            "REV_PER_PAX","RENTABLE"][:min(6,len(df_vis.columns))])
-
-    if cols_show:
-        disp = df_show[cols_show].head(100)
-        st.dataframe(disp.style.background_gradient(cmap="RdYlGn", subset=[c for c in cols_show if c in ["PROFIT","RENTABLE","LOAD_FACTOR"]]), width='stretch')
-
-    # Stats descriptives
-    with st.expander("📐 Statistiques Descriptives"):
-        num_cols = df_vis.select_dtypes(include="number").columns.tolist()
-        st.dataframe(df_vis[num_cols].describe().round(2), width='stretch')
-
-
 def _get_plot_layout(title: str, light_mode: bool) -> dict:
     text_color = "#1a1a1a" if light_mode else "white"
     muted_color = "rgba(0,0,0,0.5)" if light_mode else "rgba(255,255,255,0.7)"
