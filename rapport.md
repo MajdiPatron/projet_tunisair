@@ -1,9 +1,9 @@
 # 📋 RAPPORT TECHNIQUE — TUNISAIR ANALYTICS
 ## Système Intelligent de Prédiction de Rentabilité des Lignes Aériennes
 
-**Auteur :** Équipe Data Science  
+**Auteur :** Majdi Dridi 
 **Date :** Avril 2026  
-**Version :** 1.0  
+**Version :** 1.2 
 **Technologie :** Python · XGBoost · Streamlit · SHAP
 
 ---
